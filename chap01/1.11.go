@@ -1,8 +1,6 @@
-package uc1_11
+package main
 
 import "fmt"
-
-const cipher = "falszztysyjzyjkywjrztyjztyynaryjkyswarztyegyyj"
 
 func inverse(a int) int {
 	for i := 0; i < 26; i++ {
@@ -30,6 +28,7 @@ func decrypt(s string, a, b int) string {
 	return plain
 }
 
-func main() {
+func uc111() {
+	const cipher = "falszztysyjzyjkywjrztyjztyynaryjkyswarztyegyyj"
 	fmt.Print(decrypt(cipher, 7, 22))
 }

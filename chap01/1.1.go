@@ -1,4 +1,4 @@
-package uc1_1
+package main
 
 import "fmt"
 import "unicode"
@@ -89,7 +89,7 @@ func tryMap() {
 	fmt.Print(plain)
 }
 
-func main() {
+func uc11() {
 	percentStats()
 	tryMap()
 }

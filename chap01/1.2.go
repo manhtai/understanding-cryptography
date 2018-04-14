@@ -1,8 +1,6 @@
-package uc1_2
+package main
 
 import "fmt"
-
-const cipher = "xultpaajcxitltlxaarpjhtiwtgxktghidhipxciwtvgtpilpitghlxiwiwtxgqadds."
 
 func shiftChar(s string, i int) string {
 	result := ""
@@ -16,7 +14,7 @@ func shiftChar(s string, i int) string {
 	return result
 }
 
-func tryKey() {
+func tryKey(cipher string) {
 	for i := 0; i < 26; i++ {
 		if i == 11 {
 			fmt.Println(i, shiftChar(cipher, i))
@@ -24,6 +22,7 @@ func tryKey() {
 	}
 }
 
-func main() {
-	tryKey()
+func uc12() {
+	const cipher = "xultpaajcxitltlxaarpjhtiwtgxktghidhipxciwtvgtpilpitghlxiwiwtxgqadds."
+	tryKey(cipher)
 }
