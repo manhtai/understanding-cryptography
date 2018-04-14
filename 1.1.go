@@ -1,4 +1,4 @@
-package uc11
+package uc1_1
 
 import "fmt"
 import "unicode"

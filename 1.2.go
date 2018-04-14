@@ -1,4 +1,4 @@
-package uc12
+package uc1_2
 
 import "fmt"
 
