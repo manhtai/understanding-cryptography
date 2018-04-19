@@ -15,5 +15,5 @@ func uc21() {
 		}
 		text += string('a' + y)
 	}
-	fmt.Print(text)
+	fmt.Println(text)
 }
