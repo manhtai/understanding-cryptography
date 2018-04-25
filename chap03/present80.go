@@ -37,7 +37,7 @@ func (c *presentCipher) BlockSize() int { return BlockSize }
 
 func (c *presentCipher) Encrypt(dst, src []byte) { encryptBlock(c.subkeys[:], dst, src) }
 
-func (c *presentCipher) Decrypt(dst, src []byte) { panic("To be implemented!") }
+func (c *presentCipher) Decrypt(dst, src []byte) { decryptBlock(c.subkeys[:], dst, src) }
 
 // creates 31 80-bit subkeys from the original key
 func (c *presentCipher) generateSubkeys(keyBytes []byte) {
@@ -61,7 +61,7 @@ func (c *presentCipher) generateSubkeys(keyBytes []byte) {
 		// fmt.Printf("Key after rotation %2d: %08X %02X\n", i, key1, key2)
 
 		// Left most bit passed to sBox
-		s4 := runSBoxLayer(key1 >> 60)
+		s4 := runSBoxLayer(key1>>60, sBox[:])
 		key1 = (key1 & key1SBoxMask) | (uint64(s4) << 56)
 		// fmt.Printf("Key after S-box    %2d: %08X %02X\n", i, key1, key2)
 
@@ -74,29 +74,43 @@ func (c *presentCipher) generateSubkeys(keyBytes []byte) {
 	}
 }
 
-func cryptBlock(subkeys []uint64, dst, src []byte) {
+func cryptBlock(subkeys []uint64, dst, src []byte, decrypt bool) {
 	output := binary.BigEndian.Uint64(src)
-	for i := 0; i < 31; i++ {
-		output = sp(output, subkeys[i])
+	if decrypt {
+		output ^= subkeys[31]
+		for i := 30; i >= 0; i-- {
+			output = sp(output, subkeys[i], true)
+		}
+	} else {
+		for i := 0; i < 31; i++ {
+			output = sp(output, subkeys[i], false)
+		}
+		output ^= subkeys[31]
 	}
-	output ^= subkeys[31]
 	binary.BigEndian.PutUint64(dst, output)
 }
 
 // Encrypt one block from src into dst, using the subkeys.
 func encryptBlock(subkeys []uint64, dst, src []byte) {
-	cryptBlock(subkeys, dst, src)
+	cryptBlock(subkeys, dst, src, false)
+}
+
+// Decrypt one block from src into dst, using the subkeys.
+func decryptBlock(subkeys []uint64, dst, src []byte) {
+	cryptBlock(subkeys, dst, src, true)
 }
 
 // Run a substitution-permutation network block
-func sp(input, key uint64) uint64 {
-	input ^= key
-	// fmt.Print("====================\n")
-	// fmt.Printf("State after Add:     %8X\n", input)
-	input = runSBoxLayer(input)
-	// fmt.Printf("State after S-Box:   %8X\n", input)
-	input = runPLayer(input, pBox[:])
-	// fmt.Printf("State after P-Layer: %8X\n", input)
+func sp(input, key uint64, decrypt bool) uint64 {
+	if decrypt {
+		input = runPLayer(input, reverseBox(pBox[:]))
+		input = runSBoxLayer(input, reverseBox(sBox[:]))
+		input ^= key
+	} else {
+		input ^= key
+		input = runSBoxLayer(input, sBox[:])
+		input = runPLayer(input, pBox[:])
+	}
 	return input
 }
 
@@ -108,7 +122,7 @@ var pBox = [64]uint8{
 	12, 28, 44, 60, 13, 29, 45, 61, 14, 30, 46, 62, 15, 31, 47, 63,
 }
 
-func runSBoxLayer(input uint64) (output uint64) {
+func runSBoxLayer(input uint64, sBox []uint8) (output uint64) {
 	var preOutput uint8
 	for i := 0; i < 16; i++ {
 		mask := (^uint64(0) >> uint(4*i)) & (^uint64(0) << (4 * uint(15-i)))
@@ -122,6 +136,14 @@ func runPLayer(src uint64, permutation []uint8) (block uint64) {
 	for n, position := range permutation {
 		bit := (src >> uint(n)) & 1
 		block |= bit << uint(len(permutation)-1-int(position))
+	}
+	return
+}
+
+func reverseBox(box []uint8) (reverse []uint8) {
+	reverse = make([]uint8, len(box))
+	for n, position := range box {
+		reverse[position] = uint8(n)
 	}
 	return
 }

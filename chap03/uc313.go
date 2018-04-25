@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/hex"
+	"fmt"
 	"log"
 )
 
@@ -14,7 +15,12 @@ func uc313() {
 		log.Fatal(err)
 	}
 
-	var cipherText []byte
-	cipherText = make([]byte, 16)
+	var cipherText, plainText2 []byte
+	cipherText = make([]byte, 8)
 	present.Encrypt(cipherText, plainText)
+	fmt.Printf("%X\n", cipherText)
+
+	plainText2 = make([]byte, 8)
+	present.Decrypt(plainText2, cipherText)
+	fmt.Printf("%X\n%X\n", plainText, plainText2)
 }
