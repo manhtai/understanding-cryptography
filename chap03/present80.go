@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/cipher"
 	"encoding/binary"
-	"fmt"
+	// "fmt"
 	"strconv"
 )
 
@@ -51,7 +51,7 @@ func (c *presentCipher) generateSubkeys(keyBytes []byte) {
 	counterMask := ^uint64(0) >> 63
 
 	c.subkeys[0] = key1
-	fmt.Printf("Initial key: %08X %02X\n", key1, key2)
+	// fmt.Printf("Initial key:         %08X %02X\n", key1, key2)
 
 	// generate subkeys
 	for i := 1; i < 32; i++ {
@@ -61,7 +61,7 @@ func (c *presentCipher) generateSubkeys(keyBytes []byte) {
 		// fmt.Printf("Key after rotation %2d: %08X %02X\n", i, key1, key2)
 
 		// Left most bit passed to sBox
-		s4 := runSBoxLayer(uint8(key1 >> 60))
+		s4 := runSBoxLayer(key1 >> 60)
 		key1 = (key1 & key1SBoxMask) | (uint64(s4) << 56)
 		// fmt.Printf("Key after S-box    %2d: %08X %02X\n", i, key1, key2)
 
@@ -91,43 +91,37 @@ func encryptBlock(subkeys []uint64, dst, src []byte) {
 // Run a substitution-permutation network block
 func sp(input, key uint64) uint64 {
 	input ^= key
-	fmt.Printf("State after Add:     %8X\n", input)
-	input = runSBoxLayers(input)
-	fmt.Printf("State after S-Box:   %8X\n", input)
-	input = runPLayers(input)
-	fmt.Printf("State after P-Layer: %8X\n", input)
+	// fmt.Print("====================\n")
+	// fmt.Printf("State after Add:     %8X\n", input)
+	input = runSBoxLayer(input)
+	// fmt.Printf("State after S-Box:   %8X\n", input)
+	input = runPLayer(input, pBox[:])
+	// fmt.Printf("State after P-Layer: %8X\n", input)
 	return input
 }
 
-func runPLayers(input uint64) uint64 {
-	var preOutput uint8
-	var output uint64
-	for i := 0; i < 16; i++ {
-		preOutput = uint8((input << uint64(4*i)) >> (4 * uint64(15+i)))
-		output |= uint64(runPLayer(preOutput)) << (4 * uint64(15-i))
-	}
-	return output
-}
-
-func runSBoxLayers(input uint64) uint64 {
-	var preOutput uint8
-	var output uint64
-	for i := 0; i < 16; i++ {
-		preOutput = uint8((input << uint64(4*i)) >> (4 * uint64(15+i)))
-		output |= uint64(runSBoxLayer(preOutput)) << (4 * uint64(15-i))
-	}
-	return output
-}
-
-func runPLayer(i uint8) uint8 {
-	if i >= 0 && i < 63 {
-		return i * 16 % 63
-	}
-	return 63
-}
-
 var sBox = [16]uint8{12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2}
+var pBox = [64]uint8{
+	0, 16, 32, 48, 1, 17, 33, 49, 2, 18, 34, 50, 3, 19, 35, 51,
+	4, 20, 36, 52, 5, 21, 37, 53, 6, 22, 38, 54, 7, 23, 39, 55,
+	8, 24, 40, 56, 9, 25, 41, 57, 10, 26, 42, 58, 11, 27, 43, 59,
+	12, 28, 44, 60, 13, 29, 45, 61, 14, 30, 46, 62, 15, 31, 47, 63,
+}
 
-func runSBoxLayer(input uint8) uint8 {
-	return sBox[input]
+func runSBoxLayer(input uint64) (output uint64) {
+	var preOutput uint8
+	for i := 0; i < 16; i++ {
+		mask := (^uint64(0) >> uint(4*i)) & (^uint64(0) << (4 * uint(15-i)))
+		preOutput = uint8((input & mask) >> (4 * uint(15-i)))
+		output |= uint64(sBox[preOutput]) << (4 * uint64(15-i))
+	}
+	return
+}
+
+func runPLayer(src uint64, permutation []uint8) (block uint64) {
+	for n, position := range permutation {
+		bit := (src >> uint(n)) & 1
+		block |= bit << uint(len(permutation)-1-int(position))
+	}
+	return
 }
