@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+// gcd compute gcd of two numbers using Euclidean Algorithm
 func gcd(m, n int) int {
 	if m < n {
 		return gcd(n, m)
