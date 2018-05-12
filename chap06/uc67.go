@@ -1,9 +1,10 @@
 package main
 
 import "fmt"
+import "github.com/manhtai/understanding-cryptography/pkg"
 
 func inverse(a, m int) (i int) {
-	_, i, _ = gcde(m, a)
+	_, i, _ = pkg.Gcde(m, a)
 	if i < 0 {
 		i += m
 	}
