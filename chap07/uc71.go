@@ -7,6 +7,7 @@ import (
 )
 
 func uc71() {
+	fmt.Println("======= (7.1) =======")
 	pkg.GcdePrint(32, 640)
 	pkg.GcdePrint(49, 640)
 	p := 41
