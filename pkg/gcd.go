@@ -25,6 +25,11 @@ func Gcde(m, n int) (s, t, g int) {
 	if m*s+n*t != g {
 		s, t = t, s
 	}
+
+	// Make t not negative
+	if t < 0 {
+		t += m
+	}
 	return
 }
 
