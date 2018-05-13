@@ -1,11 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/manhtai/understanding-cryptography/pkg"
+)
 
 // kary compute x^e % n using k-ary exponentiation algorithm,
 // and handle k bits at a time
 func kary(x, e, m, k int) (r int) {
-	l := bitLen(e) / k
+	l := pkg.BitLen(e) / k
 
 	tableLen := 1 << uint(k)
 	table := make([]int, tableLen)

@@ -33,20 +33,20 @@ func (r *RSA) Prv() int {
 
 // Encrypt encrypts plain text x using snm
 func (r *RSA) Encrypt(x int) int {
-	return snm(x, r.e, r.n)
+	return pkg.Snm(x, r.e, r.n)
 }
 
 // Decrypt decrypts cipher text y using square-and-multiply algorithm
 func (r *RSA) Decrypt(y int) int {
-	return snm(y, r.d, r.n)
+	return pkg.Snm(y, r.d, r.n)
 }
 
 // DecryptCRT decrypts cipher text y using Chinese Remainder Theorem
 func (r *RSA) DecryptCRT(y int) int {
 	dp := r.d % (r.p - 1)
 	dq := r.d % (r.q - 1)
-	xp := snm(y, dp, r.p)
-	xq := snm(y, dq, r.q)
+	xp := pkg.Snm(y, dp, r.p)
+	xq := pkg.Snm(y, dq, r.q)
 	_, cp, _ := pkg.Gcde(r.p, r.q)
 	_, cq, _ := pkg.Gcde(r.q, r.p)
 	return (r.q*cp*xp + r.p*cq*xq) % r.n
