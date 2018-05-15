@@ -19,6 +19,9 @@ func gcdeInternal(m, n, s0, t0, s1, t1 int) (s, t, g int) {
 
 // Gcde compute gcd of two numbers using Extended Euclidean Algorithm
 func Gcde(m, n int) (s, t, g int) {
+	if n < 0 {
+		n += m
+	}
 	s, t, g = gcdeInternal(m, n, 1, 0, 0, 1)
 	// gcdeInternal switch m, n when recursive finding gcd, so we reorder s, t here
 	// to correct order of parameters
@@ -30,6 +33,12 @@ func Gcde(m, n int) (s, t, g int) {
 	if t < 0 {
 		t += m
 	}
+	return
+}
+
+// Inverse calculate a^-1 mod m
+func Inverse(a, m int) (i int) {
+	_, i, _ = Gcde(m, a)
 	return
 }
 
