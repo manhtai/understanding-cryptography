@@ -42,14 +42,20 @@ func (ec *EC) double(x1, y1 int) (x3, y3 int) {
 
 func uc95() {
 	fmt.Println("======= (9.5) =======")
-	ec := EC{a: 2, b: 2, p: 17}
-	x1, y1 := 5, 1
+	ec := EC{a: 3, b: 2, p: 7}
+	x1, y1 := 0, 3
 
 	x2, y2 := ec.double(x1, y1)
 	fmt.Println(x2, y2)
 
-	for (x1 != x2) || (y1 != y2) {
+	for {
 		x2, y2 = ec.add(x2, y2, x1, y1)
 		fmt.Println(x2, y2)
+
+		// Neutral element
+		if (x1 == x2) && (y1+y2)%ec.p == 0 {
+			fmt.Println("ø")
+			break
+		}
 	}
 }
